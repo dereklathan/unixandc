@@ -1,0 +1,32 @@
+mkdir dirLevel00
+cd dirLevel00
+touch file01
+mkdir dirLevel01a dirLevel01b dirLevel01c dirLevel01b/dirLevel02b
+cd dirLevel01a
+touch file02aa file02ab
+cd ../dirLevel01b
+touch file02ba file02bb
+cd dirLevel02b
+touch file03ba file03bb
+cd ../../dirLevel01c
+touch file02c
+cd ../
+ls -lR >> mylisting
+mv file01 dirLevel01a/file* dirLevel01b/dir*/file* dirLevel01b
+mv dirLevel01c/*02c .
+rmdir dirLevel01[ac]
+rmdir dirLevel01b/*
+ls -lR >> mylisting && cat mylisting | less
+
+#man -k cp will output man pages and man page descriptions
+#containing the string "cp". first i had to makewhatis to build the
+#help database.
+#
+#whatis searches the whatis database for complete words
+#cp                   (1)  - copy files and directories
+#cp                   (1p)  - copy files
+#
+#whereis outputs locations of man pages, source code, and binaries
+#for commands and apparently config files as well
+#whereis fstab
+#fstab: /etc/fstab /usr/include/fstab.h /usr/share/man/man5/fstab.5.bz2

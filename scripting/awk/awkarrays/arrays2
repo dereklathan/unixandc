@@ -1,0 +1,12 @@
+#removes duplicate lines from a file
+awk '{ found = 0
+	for ( i=0; i<nlines; i++ ) {
+		if ( lines[i] == $0 ){
+			found = 1
+			break
+		}
+	}
+	if (!found) {
+		lines[nlines++] = $0
+		print }
+	}' $@

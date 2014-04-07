@@ -1,0 +1,4 @@
+#!/bin/sh
+finger $1;
+w $1;
+last -10 $1;

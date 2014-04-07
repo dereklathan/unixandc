@@ -1,0 +1,116 @@
+#author: Derek Lathan
+#!/bin/bash
+if [ $# -eq 0 ]
+then	grade_file="grades" ; project_file="projects" ; level_file="levels"
+elif [ $# -eq 1 ]
+then	grade_file=$1 ; project_file="projects" ; level_file="levels"
+elif [ $# -eq 2 ]
+then	grade_file=$1 ; project_file=$2 ; level_file="levels"
+elif [ $# -eq 3 ] 
+then	grade_file=$1 ; project_file=$2 ; level_file=$3
+else echo "USAGE: grade_report [grade_file] [project_file] [level_file]"
+fi
+
+[ -r $grade_file ]
+if [ $? -ne 0 ]
+then echo "$grade_file not readable" && exit 1
+fi
+[ -r $project_file ]
+if [ $? -ne 0 ]
+then echo "$project_file not readable" && exit 1
+fi
+[ -r $level_file ]
+if [ $? -ne 0 ]
+then echo "$level_file not readable" && exit 1
+fi
+ln -s $grade_file grade_file
+ln -s $project_file project_file
+ln -s $level_file level_file
+
+
+
+awk ' 	BEGIN { FS=":" ; sum=0 ; printf "Name\t\t" ; namecount=0 ; projectcount=0}
+	{	if(FILENAME=="project_file"){
+			project[NR] = $1;
+			weight[NR] = $2;
+			sum = sum + $2;
+			projectcount++;}
+		else if(FILENAME=="grade_file"){
+			gradecount=0;
+			names[namecount+1] = $1
+			namecount++
+			for(c=2;c<=NF;c++){
+				grades[names[namecount] "." c-1]=$c;
+				gradecount++}
+			if(gradecount!=projectcount){
+				print "INVALID FILE(s)";
+				exit;
+			}}
+	}
+	END { for(c=0;c<gradecount;c++)
+			printf "%s*%s ", project[c+1], weight[c+1];
+			printf "total total/%s\n---------------- -------- -------- -------- ------- ----- -------\n", sum;
+			for(c=0;c<namecount;c++){
+				printf "%s\t", names[c+1];
+				total=0;
+				for(d=0;d<projectcount;d++){
+					printf "%i\t", grades[names[c+1] "." d+1]*weight[d+1];
+					total=total+(grades[names[c+1] "." d+1]*weight[d+1]);}
+				printf "%i ", total;
+				print total/sum;
+			}
+	} ' project_file grade_file > report
+
+awk '	BEGIN { printf "\t\t\tGrade Report\n\nName\t\t" ; p=1 ; q=1 }
+	{ if(FILENAME=="report"){
+		if(NR==1){
+			projectcount=0
+			for(c=2;c<NF-1;c++){
+				d=index($c, "*");
+				f=length($c);
+				weight[c-1]=substr($c, d+1, f);
+				project[c-1]=substr($c, 1, d-1);
+				projectcount++;				
+				}
+			}
+		else if(NR==2) 
+			FS="[ :\t]";
+		else if(NR>2){
+			names[q]=$1 " " $2;
+			for(c=3;c<NF-1;c++){
+				grades[names[q] "." c-2] = $c/(weight[c-2]);
+			}
+			average[q]=$NF;
+			q++;}
+		}
+	  else{	
+		lettergrade[p]=$1
+		numbergrade[p]=$2
+		p++;}		
+	} 
+
+	END { for(c=1;c<=projectcount;c++)
+			printf "  %s  ", project[c];
+		print "  average   grade\n----------------  -----    -----    -----   ------   -------   -----";
+		for(d=1;d<q;d++){
+			highest=1		
+			for(c=1;c<=q;c++){
+				if(average[c]>=average[highest])
+					highest=c;}
+			check=numbergrade[1]
+			grade=lettergrade[1]
+			for(c=1;c<=p;c++){
+				if(average[highest]<=numbergrade[c] && numbergrade[c]<=check){
+					grade=lettergrade[c+1];
+					check=numbergrade[c+1]}
+			}
+			printf "%s\t", names[highest];
+			for(c=1;c<=projectcount;c++)
+				printf "%s\t", grades[names[highest] "." c];
+			printf "%4.1f\t%s\n", average[highest], grade;
+			average[highest]=0;
+			
+		}
+			
+	} ' report level_file
+rm grade_file project_file level_file

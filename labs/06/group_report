@@ -1,0 +1,17 @@
+#Author: Derek Lathan
+#!/bin/sh
+echo -e "\tGroup Report\n\nGroup\tGID\tCount\n------- ------- -------"
+count=1
+while [ $count -le $# ]
+do
+	group=$(eval echo \$$count) 
+	groupid=`cat /etc/group | grep "^$group:" | cut -d: -f 3`
+	if [ -z $groupid ];
+	then echo "$group group does not exist."
+	else
+		groupcount=`cat /etc/passwd | grep ".*:.*:.*:$groupid:.*" | wc -l`
+		echo -e "$group\t$groupid\t$groupcount"
+	fi	
+count=`expr $count + 1`
+done
+

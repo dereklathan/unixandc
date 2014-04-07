@@ -1,0 +1,33 @@
+#!/bin/bash
+while true
+do
+	echo "What do you want to do with file '$1'?"
+	echo -e "l to ls, m to page file, o for octal dump, r to remove,\ng to gzip, or c to continue" 
+	read c
+	if [ "$c" = "l" ]
+	then
+		ls -l "$1"
+	elif [ "$c" = "m" ]
+	then
+		more "$1"
+	elif [ "$c" = "o" ]
+	then
+		od -x "$1"
+	elif [ "$c" = "r" ]
+	then
+		echo "are you sure you want to remove $1 (y/n)?"
+		read d;
+		if [ "$d" = "y" ] || [ "$d" = "Y" ] || [ "$d" = "yes" ] || [ "$d" = "Yes" ] [ "$d" = "YES" ]
+		then	
+			rm -f "$1" && exit
+		fi
+	elif [ "$c" = "g" ]
+	then
+		gzip "$1"
+		exit
+	elif [ "$c" = "c" ]
+	then	exit
+	else 
+		echo "invalid command"
+	fi
+done

@@ -1,0 +1,33 @@
+#!/bin/bash
+if [ $# -eq 0 ];
+then	echo "USAGE: squeeze [-s size] [-d days] [directory_1 ...]";
+	exit 1
+fi
+
+size=1000000
+days=10
+
+while getopts s:d: o
+do	case "$o" in
+	s)	size="$OPTARG";;
+	d)	days="$OPTARG";;
+	\?)	echo "USAGE: squeeze [-s size] [-d days] [directory_1 ...]" && exit 1;;
+	esac
+done
+
+while [ "$1" = "-s" ] || [ "$1" = "-d" ]
+do	shift 2
+done
+
+if [ $# -eq 0 ];
+then	find . -type f -size +$size -exec ./squeeze_file {} \; -o -type f -mtime +$days -exec ./squeeze_file {} \;
+	find . -name core -o -name a.out -exec ./squeeze_file {} \;
+fi
+
+while [ $# -gt 0 ]
+do
+	find $1 -type f -size +$size -exec ./squeeze_file {} \; -o -type f -mtime +$days -exec ./squeeze_file {} \;
+	find $1 -name core -o -name a.out -exec ./squeeze_file {} \;
+	shift
+done
+

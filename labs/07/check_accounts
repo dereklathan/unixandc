@@ -1,0 +1,32 @@
+#Author: Derek Lathan
+#!/bin/sh
+if [ $# -lt 1 ]; then
+	echo "USAGE: check_accounts account_name [optional_account_name ...]"
+	exit 1
+fi
+echo -e "\n\t    Account Summary\n\nAccount\t\tGroup ID\tUser ID\n--------\t--------\t-------"
+while [ $# -gt 0 ]
+do
+	userid=`cat /etc/passwd | grep "^$1:" | cut -d: -f 3`
+	groupid=`cat /etc/passwd | grep "^$1:" | cut -d: -f 4`
+	checkgroup=`cat /etc/group | grep "^.*:.*:$groupid:" | wc -l`
+	checkuser=`cat /etc/passwd | grep "^.*:$userid:$groupid" | wc -l`
+	test -z $userid && checkuser=0
+	test -z $groupid && checkgroup=0
+echo -e "$1\t\t\c"
+if [ $checkgroup -eq 1 ];
+then
+	echo -e "   OK\t\t\c"
+else
+	echo -e "NO GROUP\t\c"
+fi
+
+if [ $checkuser -eq 1 ];
+then
+	echo -e "  OK"
+else
+	echo -e " 123"
+fi
+shift
+done
+
